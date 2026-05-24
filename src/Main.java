@@ -37,13 +37,17 @@ public class Main extends JFrame {
 
     private JPanel canvas;
     private JLabel lblTurno;
+    private JLabel lblCronometro;
+
+    private Timer timerCronometro;
+    private int segundosPartida = 0;
 
     public Main() {
         cantidadJugadores = pedirCantidadJugadores();
 
         iniciarObjetosJuego();
 
-        setTitle("Damas Chinas - Multijugador");
+        setTitle("Damas Chinas - XP");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout(6, 6));
         getContentPane().setBackground(new Color(30, 30, 40));
@@ -77,11 +81,21 @@ public class Main extends JFrame {
         JPanel panelInferior = new JPanel(new BorderLayout());
         panelInferior.setBackground(new Color(30, 30, 40));
 
+        JPanel panelInfo = new JPanel(new GridLayout(2, 1));
+        panelInfo.setBackground(new Color(30, 30, 40));
+
         lblTurno = new JLabel("", JLabel.CENTER);
         lblTurno.setFont(new Font("Arial", Font.BOLD, 14));
         lblTurno.setForeground(Color.WHITE);
-        lblTurno.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
-        actualizarTextoTurno();
+        lblTurno.setBorder(BorderFactory.createEmptyBorder(6, 0, 3, 0));
+
+        lblCronometro = new JLabel("Tiempo de partida: 00:00", JLabel.CENTER);
+        lblCronometro.setFont(new Font("Arial", Font.BOLD, 14));
+        lblCronometro.setForeground(Color.WHITE);
+        lblCronometro.setBorder(BorderFactory.createEmptyBorder(3, 0, 6, 0));
+
+        panelInfo.add(lblTurno);
+        panelInfo.add(lblCronometro);
 
         JButton btnReiniciar = new JButton("Reiniciar partida");
         btnReiniciar.setFont(new Font("Arial", Font.BOLD, 14));
@@ -92,9 +106,9 @@ public class Main extends JFrame {
             }
         });
 
-        JButton btnNuevaConfiguracion = new JButton("Cambiar jugadores");
-        btnNuevaConfiguracion.setFont(new Font("Arial", Font.BOLD, 14));
-        btnNuevaConfiguracion.addActionListener(new ActionListener() {
+        JButton btnCambiarJugadores = new JButton("Cambiar jugadores");
+        btnCambiarJugadores.setFont(new Font("Arial", Font.BOLD, 14));
+        btnCambiarJugadores.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 cambiarCantidadJugadores();
@@ -104,16 +118,20 @@ public class Main extends JFrame {
         JPanel panelBotones = new JPanel();
         panelBotones.setBackground(new Color(30, 30, 40));
         panelBotones.add(btnReiniciar);
-        panelBotones.add(btnNuevaConfiguracion);
+        panelBotones.add(btnCambiarJugadores);
 
-        panelInferior.add(lblTurno, BorderLayout.NORTH);
+        panelInferior.add(panelInfo, BorderLayout.NORTH);
         panelInferior.add(panelBotones, BorderLayout.SOUTH);
 
         add(panelInferior, BorderLayout.SOUTH);
 
+        actualizarTextoTurno();
+
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
+
+        iniciarCronometro();
     }
 
     private int pedirCantidadJugadores() {
@@ -133,24 +151,7 @@ public class Main extends JFrame {
             return 2;
         }
 
-        return seleccion;
-    }
-
-    private void cambiarCantidadJugadores() {
-        int nuevaCantidad = pedirCantidadJugadores();
-
-        cantidadJugadores = nuevaCantidad;
-        iniciarObjetosJuego();
-
-        actualizarTextoTurno();
-        canvas.repaint();
-
-        JOptionPane.showMessageDialog(
-            this,
-            "Nueva partida configurada para " + cantidadJugadores + " jugadores.",
-            "Configuración actualizada",
-            JOptionPane.INFORMATION_MESSAGE
-        );
+        return seleccion.intValue();
     }
 
     private void iniciarObjetosJuego() {
@@ -171,6 +172,7 @@ public class Main extends JFrame {
 
     private void reiniciarPartida() {
         iniciarObjetosJuego();
+        reiniciarCronometro();
 
         actualizarTextoTurno();
         canvas.repaint();
@@ -181,6 +183,62 @@ public class Main extends JFrame {
             "HU6 - Reiniciar partida",
             JOptionPane.INFORMATION_MESSAGE
         );
+    }
+
+    private void cambiarCantidadJugadores() {
+        int nuevaCantidad = pedirCantidadJugadores();
+
+        cantidadJugadores = nuevaCantidad;
+        iniciarObjetosJuego();
+        reiniciarCronometro();
+
+        actualizarTextoTurno();
+        canvas.repaint();
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Nueva partida configurada para " + cantidadJugadores + " jugadores.",
+            "Configuración actualizada",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    private void iniciarCronometro() {
+        detenerCronometro();
+
+        segundosPartida = 0;
+        actualizarCronometro();
+
+        timerCronometro = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                segundosPartida++;
+                actualizarCronometro();
+            }
+        });
+
+        timerCronometro.start();
+    }
+
+    private void detenerCronometro() {
+        if (timerCronometro != null) {
+            timerCronometro.stop();
+        }
+    }
+
+    private void reiniciarCronometro() {
+        iniciarCronometro();
+    }
+
+    private void actualizarCronometro() {
+        int minutos = segundosPartida / 60;
+        int segundos = segundosPartida % 60;
+
+        String tiempo = String.format("%02d:%02d", minutos, segundos);
+
+        if (lblCronometro != null) {
+            lblCronometro.setText("Tiempo de partida: " + tiempo);
+        }
     }
 
     private void actualizarTextoTurno() {
@@ -201,6 +259,18 @@ public class Main extends JFrame {
 
         turnoActual = jugadoresActivos[indiceTurno];
         actualizarTextoTurno();
+    }
+
+    private void finalizarJuego(String ganador) {
+        juegoTerminado = true;
+        detenerCronometro();
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Ganador: " + ganador + "\n" + lblCronometro.getText(),
+            "Fin de la partida",
+            JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
     private void manejarClic(int px, int py) {
@@ -243,8 +313,10 @@ public class Main extends JFrame {
             movimientosLegales = movimiento.destinosLegales(f, c);
         } else {
             if (val >= 0) {
-                lblTurno.setText("No es turno de " + NOMBRES[val] +
-                        ". Turno actual: " + NOMBRES[turnoActual]);
+                lblTurno.setText(
+                    "No es turno de " + NOMBRES[val] +
+                    ". Turno actual: " + NOMBRES[turnoActual]
+                );
             }
         }
 
@@ -394,6 +466,11 @@ public class Main extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(Main::new);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new Main();
+            }
+        });
     }
 }
