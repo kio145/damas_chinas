@@ -130,11 +130,21 @@ public class Main extends JFrame {
             }
         });
 
+        JButton btnProbarVictoria = new JButton("Probar victoria");
+        btnProbarVictoria.setFont(new Font("Arial", Font.BOLD, 13));
+        btnProbarVictoria.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                probarVictoria();
+            }
+        });
+
         JPanel panelBotones = new JPanel();
         panelBotones.setBackground(new Color(30, 30, 40));
         panelBotones.add(btnReiniciar);
         panelBotones.add(btnNuevaPartida);
         panelBotones.add(btnCambiarJugadores);
+        panelBotones.add(btnProbarVictoria);
 
         JPanel panelCentroInferior = new JPanel(new BorderLayout());
         panelCentroInferior.setBackground(new Color(30, 30, 40));
@@ -390,16 +400,62 @@ public class Main extends JFrame {
         actualizarTextoTurno();
     }
 
+    private boolean verificarVictoria(int jugador) {
+        int[][] zonaObjetivo = fichas.getZonaObjetivo(jugador);
+
+        for (int[] pos : zonaObjetivo) {
+            int f = pos[0];
+            int c = pos[1];
+
+            if (tablero.getFicha(f, c) != jugador) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private void finalizarJuego(String ganador) {
         juegoTerminado = true;
         detenerCronometro();
 
+        lblMensajeTurno.setText("Partida finalizada. Ganador: " + ganador);
+
         JOptionPane.showMessageDialog(
             this,
-            "Ganador: " + ganador + "\n" + lblCronometro.getText(),
-            "Fin de la partida",
+            "¡VICTORIA!\nGanador: " + ganador + "\n" + lblCronometro.getText(),
+            "HU5 - Condición de victoria",
             JOptionPane.INFORMATION_MESSAGE
         );
+    }
+
+    private void probarVictoria() {
+        int jugador = turnoActual;
+
+        int[][] zonaInicio = fichas.getZonaInicio(jugador);
+        int[][] zonaObjetivo = fichas.getZonaObjetivo(jugador);
+
+        for (int i = 0; i < zonaInicio.length; i++) {
+            int f = zonaInicio[i][0];
+            int c = zonaInicio[i][1];
+
+            if (tablero.getFicha(f, c) == jugador) {
+                tablero.setFicha(f, c, Tablero.VACIO);
+            }
+        }
+
+        for (int i = 0; i < zonaObjetivo.length; i++) {
+            int f = zonaObjetivo[i][0];
+            int c = zonaObjetivo[i][1];
+
+            tablero.setFicha(f, c, jugador);
+        }
+
+        canvas.repaint();
+
+        if (verificarVictoria(jugador)) {
+            finalizarJuego(NOMBRES[jugador]);
+        }
     }
 
     private void manejarClic(int px, int py) {
@@ -422,8 +478,16 @@ public class Main extends JFrame {
 
         if (selFila != -1) {
             if (esMovimientoLegal(f, c)) {
+                int jugadorQueMovio = turnoActual;
+
                 movimiento.mover(selFila, selCol, f, c);
                 deseleccionar();
+
+                if (verificarVictoria(jugadorQueMovio)) {
+                    canvas.repaint();
+                    finalizarJuego(NOMBRES[jugadorQueMovio]);
+                    return;
+                }
 
                 cambiarTurno();
 

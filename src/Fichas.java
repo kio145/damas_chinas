@@ -17,6 +17,10 @@ public class Fichas {
         {{4,15},{4,14},{5,14},{4,13},{5,13},{4,12},{6,12},{7,12},{5,12},{6,13}}
     };
 
+    private static final int[] ZONAS_OBJETIVO = {
+        3, 4, 5, 0, 1, 2
+    };
+
     private final Tablero tablero;
     private int[] jugadoresActivos;
 
@@ -58,6 +62,11 @@ public class Fichas {
         return ZONAS_INICIO[jugador];
     }
 
+    public int[][] getZonaObjetivo(int jugador) {
+        int zonaDestino = ZONAS_OBJETIVO[jugador];
+        return ZONAS_INICIO[zonaDestino];
+    }
+
     public int[] getJugadoresActivos() {
         return jugadoresActivos;
     }
@@ -68,6 +77,7 @@ public class Fichas {
                 return true;
             }
         }
+
         return false;
     }
 
