@@ -36,8 +36,13 @@ public class Main extends JFrame {
     private boolean juegoTerminado = false;
 
     private JPanel canvas;
+
     private JLabel lblTurno;
     private JLabel lblCronometro;
+    private JLabel lblNombreTurno;
+    private JLabel lblMensajeTurno;
+    private JPanel panelColorTurno;
+    private JPanel panelIndicadorTurno;
 
     private Timer timerCronometro;
     private int segundosPartida = 0;
@@ -81,21 +86,22 @@ public class Main extends JFrame {
         JPanel panelInferior = new JPanel(new BorderLayout());
         panelInferior.setBackground(new Color(30, 30, 40));
 
-        JPanel panelInfo = new JPanel(new GridLayout(2, 1));
-        panelInfo.setBackground(new Color(30, 30, 40));
+        panelIndicadorTurno = crearPanelIndicadorTurno();
 
         lblTurno = new JLabel("", JLabel.CENTER);
-        lblTurno.setFont(new Font("Arial", Font.BOLD, 14));
+        lblTurno.setFont(new Font("Arial", Font.BOLD, 13));
         lblTurno.setForeground(Color.WHITE);
-        lblTurno.setBorder(BorderFactory.createEmptyBorder(6, 0, 3, 0));
+        lblTurno.setBorder(BorderFactory.createEmptyBorder(4, 0, 2, 0));
 
         lblCronometro = new JLabel("Tiempo de partida: 00:00", JLabel.CENTER);
-        lblCronometro.setFont(new Font("Arial", Font.BOLD, 14));
+        lblCronometro.setFont(new Font("Arial", Font.BOLD, 13));
         lblCronometro.setForeground(Color.WHITE);
-        lblCronometro.setBorder(BorderFactory.createEmptyBorder(3, 0, 6, 0));
+        lblCronometro.setBorder(BorderFactory.createEmptyBorder(2, 0, 4, 0));
 
-        panelInfo.add(lblTurno);
-        panelInfo.add(lblCronometro);
+        JPanel panelTextos = new JPanel(new GridLayout(2, 1));
+        panelTextos.setBackground(new Color(30, 30, 40));
+        panelTextos.add(lblTurno);
+        panelTextos.add(lblCronometro);
 
         JButton btnReiniciar = new JButton("Reiniciar partida");
         btnReiniciar.setFont(new Font("Arial", Font.BOLD, 14));
@@ -120,8 +126,13 @@ public class Main extends JFrame {
         panelBotones.add(btnReiniciar);
         panelBotones.add(btnCambiarJugadores);
 
-        panelInferior.add(panelInfo, BorderLayout.NORTH);
-        panelInferior.add(panelBotones, BorderLayout.SOUTH);
+        JPanel panelCentroInferior = new JPanel(new BorderLayout());
+        panelCentroInferior.setBackground(new Color(30, 30, 40));
+        panelCentroInferior.add(panelIndicadorTurno, BorderLayout.NORTH);
+        panelCentroInferior.add(panelTextos, BorderLayout.CENTER);
+        panelCentroInferior.add(panelBotones, BorderLayout.SOUTH);
+
+        panelInferior.add(panelCentroInferior, BorderLayout.CENTER);
 
         add(panelInferior, BorderLayout.SOUTH);
 
@@ -132,6 +143,63 @@ public class Main extends JFrame {
         setVisible(true);
 
         iniciarCronometro();
+    }
+
+    private JPanel crearPanelIndicadorTurno() {
+        JPanel panel = new JPanel(new BorderLayout(10, 0));
+        panel.setBackground(new Color(20, 20, 30));
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(255, 215, 0), 2),
+            BorderFactory.createEmptyBorder(8, 15, 8, 15)
+        ));
+
+        JLabel tituloTurno = new JLabel("TURNO ACTUAL");
+        tituloTurno.setFont(new Font("Arial", Font.BOLD, 12));
+        tituloTurno.setForeground(new Color(255, 215, 0));
+
+        lblNombreTurno = new JLabel("");
+        lblNombreTurno.setFont(new Font("Arial", Font.BOLD, 24));
+        lblNombreTurno.setForeground(Color.WHITE);
+
+        lblMensajeTurno = new JLabel("");
+        lblMensajeTurno.setFont(new Font("Arial", Font.PLAIN, 12));
+        lblMensajeTurno.setForeground(new Color(210, 210, 210));
+
+        JPanel panelTexto = new JPanel(new GridLayout(3, 1));
+        panelTexto.setBackground(new Color(20, 20, 30));
+        panelTexto.add(tituloTurno);
+        panelTexto.add(lblNombreTurno);
+        panelTexto.add(lblMensajeTurno);
+
+        panelColorTurno = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                Color color = COLORES[turnoActual];
+
+                g2.setColor(new Color(0, 0, 0, 120));
+                g2.fillOval(7, 7, 42, 42);
+
+                g2.setColor(color);
+                g2.fillOval(4, 4, 42, 42);
+
+                g2.setColor(Color.WHITE);
+                g2.setStroke(new BasicStroke(3));
+                g2.drawOval(4, 4, 42, 42);
+            }
+        };
+
+        panelColorTurno.setPreferredSize(new Dimension(55, 55));
+        panelColorTurno.setBackground(new Color(20, 20, 30));
+
+        panel.add(panelColorTurno, BorderLayout.WEST);
+        panel.add(panelTexto, BorderLayout.CENTER);
+
+        return panel;
     }
 
     private int pedirCantidadJugadores() {
@@ -248,6 +316,26 @@ public class Main extends JFrame {
                 " | Turno actual: " + NOMBRES[turnoActual]
             );
         }
+
+        if (lblNombreTurno != null) {
+            lblNombreTurno.setText(NOMBRES[turnoActual].toUpperCase());
+            lblNombreTurno.setForeground(COLORES[turnoActual]);
+        }
+
+        if (lblMensajeTurno != null) {
+            lblMensajeTurno.setText("Debe mover una ficha del color " + NOMBRES[turnoActual]);
+        }
+
+        if (panelIndicadorTurno != null) {
+            panelIndicadorTurno.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(COLORES[turnoActual], 3),
+                BorderFactory.createEmptyBorder(8, 15, 8, 15)
+            ));
+        }
+
+        if (panelColorTurno != null) {
+            panelColorTurno.repaint();
+        }
     }
 
     private void cambiarTurno() {
@@ -313,9 +401,9 @@ public class Main extends JFrame {
             movimientosLegales = movimiento.destinosLegales(f, c);
         } else {
             if (val >= 0) {
-                lblTurno.setText(
+                lblMensajeTurno.setText(
                     "No es turno de " + NOMBRES[val] +
-                    ". Turno actual: " + NOMBRES[turnoActual]
+                    ". Debe jugar " + NOMBRES[turnoActual]
                 );
             }
         }
