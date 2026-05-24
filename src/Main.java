@@ -22,6 +22,9 @@ public class Main extends JFrame {
     private Fichas fichas;
     private Movimiento movimiento;
 
+    private int cantidadJugadores = 6;
+    private int[] jugadoresActivos;
+    private int indiceTurno = 0;
     private int turnoActual = 0;
     private int selFila = -1;
     private int selCol = -1;
@@ -31,6 +34,21 @@ public class Main extends JFrame {
 
     private JPanel canvas;
     private JLabel lblTurno;
+
+    private void cambiarTurno() {
+        indiceTurno++;
+
+        if (indiceTurno >= jugadoresActivos.length) {
+            indiceTurno = 0;
+        }
+
+        turnoActual = jugadoresActivos[indiceTurno];
+
+        if (lblTurno != null) {
+            lblTurno.setText("Turno actual: " + NOMBRES[turnoActual] +
+                    " | Jugadores activos: " + cantidadJugadores);
+        }
+    }
 
     public Main() {
         iniciarObjetosJuego();
@@ -69,7 +87,8 @@ public class Main extends JFrame {
         JPanel panelInferior = new JPanel(new BorderLayout());
         panelInferior.setBackground(new Color(30, 30, 40));
 
-        lblTurno = new JLabel("Turno actual: " + NOMBRES[turnoActual], JLabel.CENTER);
+        lblTurno = new JLabel("Turno actual: " + NOMBRES[turnoActual] +
+        " | Jugadores activos: " + cantidadJugadores, JLabel.CENTER);
         lblTurno.setFont(new Font("Arial", Font.BOLD, 14));
         lblTurno.setForeground(Color.WHITE);
         lblTurno.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
@@ -99,21 +118,26 @@ public class Main extends JFrame {
     }
 
     private void iniciarObjetosJuego() {
-        tablero = new Tablero();
-        fichas = new Fichas(tablero);
-        movimiento = new Movimiento(tablero, fichas);
+    tablero = new Tablero();
+    fichas = new Fichas(tablero, cantidadJugadores);
+    movimiento = new Movimiento(tablero, fichas);
 
-        turnoActual = 0;
-        selFila = -1;
-        selCol = -1;
-        movimientosLegales = null;
-        juegoTerminado = false;
-    }
+    jugadoresActivos = fichas.getJugadoresActivos();
+
+    indiceTurno = 0;
+    turnoActual = jugadoresActivos[indiceTurno];
+
+    selFila = -1;
+    selCol = -1;
+    movimientosLegales = null;
+    juegoTerminado = false;
+  }
 
     private void reiniciarPartida() {
         iniciarObjetosJuego();
 
-        lblTurno.setText("Partida reiniciada. Turno actual: " + NOMBRES[turnoActual]);
+        lblTurno.setText("Partida reiniciada. Turno actual: " + NOMBRES[turnoActual] +
+        " | Jugadores activos: " + cantidadJugadores);
         canvas.repaint();
 
         JOptionPane.showMessageDialog(
@@ -147,11 +171,7 @@ public class Main extends JFrame {
                 movimiento.mover(selFila, selCol, f, c);
                 deseleccionar();
 
-                if (turnoActual == 0) {
-                    turnoActual = 3;
-                } else {
-                    turnoActual = 0;
-                }
+                cambiarTurno();
 
                 lblTurno.setText("Turno actual: " + NOMBRES[turnoActual]);
                 canvas.repaint();
@@ -163,10 +183,14 @@ public class Main extends JFrame {
 
         int val = tablero.getFicha(f, c);
 
-        if (val == turnoActual) {
+        if (val == turnoActual && fichas.esJugadorActivo(val)) {
             selFila = f;
             selCol = c;
             movimientosLegales = movimiento.destinosLegales(f, c);
+        } else {
+            if (lblTurno != null) {
+                lblTurno.setText("Solo puede mover el jugador: " + NOMBRES[turnoActual]);
+            }
         }
 
         canvas.repaint();
