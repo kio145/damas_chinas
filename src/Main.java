@@ -104,7 +104,7 @@ public class Main extends JFrame {
         panelTextos.add(lblCronometro);
 
         JButton btnReiniciar = new JButton("Reiniciar partida");
-        btnReiniciar.setFont(new Font("Arial", Font.BOLD, 14));
+        btnReiniciar.setFont(new Font("Arial", Font.BOLD, 13));
         btnReiniciar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -112,8 +112,17 @@ public class Main extends JFrame {
             }
         });
 
+        JButton btnNuevaPartida = new JButton("Nueva partida");
+        btnNuevaPartida.setFont(new Font("Arial", Font.BOLD, 13));
+        btnNuevaPartida.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                nuevaPartida();
+            }
+        });
+
         JButton btnCambiarJugadores = new JButton("Cambiar jugadores");
-        btnCambiarJugadores.setFont(new Font("Arial", Font.BOLD, 14));
+        btnCambiarJugadores.setFont(new Font("Arial", Font.BOLD, 13));
         btnCambiarJugadores.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -124,6 +133,7 @@ public class Main extends JFrame {
         JPanel panelBotones = new JPanel();
         panelBotones.setBackground(new Color(30, 30, 40));
         panelBotones.add(btnReiniciar);
+        panelBotones.add(btnNuevaPartida);
         panelBotones.add(btnCambiarJugadores);
 
         JPanel panelCentroInferior = new JPanel(new BorderLayout());
@@ -249,6 +259,37 @@ public class Main extends JFrame {
             this,
             "La partida fue reiniciada correctamente.",
             "HU6 - Reiniciar partida",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+    private void nuevaPartida() {
+        int respuesta = JOptionPane.showConfirmDialog(
+            this,
+            "¿Deseas iniciar una nueva partida con la misma cantidad de jugadores?",
+            "HU11 - Nueva partida",
+            JOptionPane.YES_NO_CANCEL_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (respuesta == JOptionPane.CANCEL_OPTION || respuesta == JOptionPane.CLOSED_OPTION) {
+            return;
+        }
+
+        if (respuesta == JOptionPane.NO_OPTION) {
+            cantidadJugadores = pedirCantidadJugadores();
+        }
+
+        iniciarObjetosJuego();
+        reiniciarCronometro();
+
+        actualizarTextoTurno();
+        canvas.repaint();
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Nueva partida iniciada correctamente.\nJugadores: " + cantidadJugadores,
+            "HU11 - Nueva partida",
             JOptionPane.INFORMATION_MESSAGE
         );
     }
