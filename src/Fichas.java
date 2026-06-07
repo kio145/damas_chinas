@@ -82,19 +82,7 @@ public class Fichas {
     }
 
     public boolean moverFicha(int fOrigen, int cOrigen, int fDestino, int cDestino) {
-        if (!tablero.esValida(fOrigen, cOrigen) || !tablero.esValida(fDestino, cDestino)) {
-            return false;
-        }
+    return tablero.moverFicha(fOrigen, cOrigen, fDestino, cDestino);
+}
 
-        int jugador = tablero.getFicha(fOrigen, cOrigen);
-
-        if (jugador < 0) {
-            return false;
-        }
-
-        tablero.setFicha(fOrigen, cOrigen, Tablero.VACIO);
-        tablero.setFicha(fDestino, cDestino, jugador);
-
-        return true;
-    }
 }

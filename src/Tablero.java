@@ -58,4 +58,17 @@ public class Tablero {
         }
         return copia;
     }
+
+    public boolean moverFicha(int fOrigen, int cOrigen, int fDestino, int cDestino) {
+    if (!esValida(fOrigen, cOrigen) || !esValida(fDestino, cDestino)) {
+        return false;
+    }
+    int jugador = getFicha(fOrigen, cOrigen);
+    if (jugador < 0) return false;
+
+    setFicha(fOrigen, cOrigen, VACIO);
+    setFicha(fDestino, cDestino, jugador);
+    return true;
+}
+
 }

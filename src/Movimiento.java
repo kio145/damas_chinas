@@ -19,62 +19,67 @@ public class Movimiento {
     }
 
     
-    public List<int[]> destinosLegales(int fO, int cO) {
-        List<int[]> destinos = new ArrayList<>();
-
-        if (!tablero.esValida(fO, cO) || tablero.getFicha(fO, cO) == Tablero.VACIO) {
-            return destinos;
+    private void agregarMovimientosPaso(int fO, int cO, List<int[]> destinos) {
+    for (int[] d : DIRS) {
+        int nf = fO + d[0];
+        int nc = cO + d[1];
+        if (tablero.esValida(nf, nc) && tablero.getFicha(nf, nc) == Tablero.VACIO) {
+            destinos.add(new int[]{nf, nc});
         }
+    }
+}
 
+
+private void agregarMovimientosSalto(int fO, int cO, List<int[]> destinos) {
+    Set<String> visitados = new HashSet<>();
+    Queue<int[]> cola = new LinkedList<>();
+
+    visitados.add(fO + "," + cO);
+    cola.add(new int[]{fO, cO});
+
+    while (!cola.isEmpty()) {
+        int[] actual = cola.poll();
         for (int[] d : DIRS) {
-            int nf = fO + d[0];
-            int nc = cO + d[1];
-            if (tablero.esValida(nf, nc) && tablero.getFicha(nf, nc) == Tablero.VACIO) {
-                destinos.add(new int[]{nf, nc});
+            int mf = actual[0] + d[0];
+            int mc = actual[1] + d[1];
+            int df = actual[0] + (2 * d[0]);
+            int dc = actual[1] + (2 * d[1]);
+
+            if (!tablero.esValida(mf, mc) || tablero.getFicha(mf, mc) == Tablero.VACIO) continue;
+            if (!tablero.esValida(df, dc) || tablero.getFicha(df, dc) != Tablero.VACIO) continue;
+
+            String clave = df + "," + dc;
+            if (!visitados.contains(clave)) {
+                visitados.add(clave);
+                destinos.add(new int[]{df, dc});
+                cola.add(new int[]{df, dc});
             }
         }
+    }
+}
+public List<int[]> destinosLegales(int fO, int cO) {
+    List<int[]> destinos = new ArrayList<>();
 
-        Set<String> visitados = new HashSet<>();
-        Queue<int[]> cola = new LinkedList<>();
-
-        visitados.add(fO + "," + cO);
-        cola.add(new int[]{fO, cO});
-
-        while (!cola.isEmpty()) {
-            int[] actual = cola.poll();
-
-            for (int[] d : DIRS) {
-                int mf = actual[0] + d[0];     
-                int mc = actual[1] + d[1];
-                int df = actual[0] + (2 * d[0]); 
-                int dc = actual[1] + (2 * d[1]);
-
-                if (!tablero.esValida(mf, mc) || tablero.getFicha(mf, mc) == Tablero.VACIO) {
-                    continue;
-                }
-
-                if (!tablero.esValida(df, dc) || tablero.getFicha(df, dc) != Tablero.VACIO) {
-                    continue;
-                }
-
-                String clave = df + "," + dc;
-                if (!visitados.contains(clave)) {
-                    visitados.add(clave);
-                    destinos.add(new int[]{df, dc});
-                    cola.add(new int[]{df, dc}); 
-                }
-            }
-        }
-
+    if (!tablero.esValida(fO, cO) || tablero.getFicha(fO, cO) == Tablero.VACIO) {
         return destinos;
     }
-    public boolean mover(int fO, int cO, int fD, int cD) {
-        List<int[]> legales = destinosLegales(fO, cO);
-        for (int[] dest : legales) {
-            if (dest[0] == fD && dest[1] == cD) {
-                return fichas.moverFicha(fO, cO, fD, cD);
-            }
+
+    agregarMovimientosPaso(fO, cO, destinos);   // ← reemplaza las 7 líneas
+    agregarMovimientosSalto(fO, cO, destinos);  // ← reemplaza las 31 líneas
+
+    return destinos;
+}
+
+
+
+   public boolean mover(int fO, int cO, int fD, int cD) {
+    List<int[]> legales = destinosLegales(fO, cO);
+    for (int[] dest : legales) {
+        if (dest[0] == fD && dest[1] == cD) {
+            return tablero.moverFicha(fO, cO, fD, cD); // ← directo a Tablero
         }
-        return false;
     }
+    return false;
+}
+
 }
