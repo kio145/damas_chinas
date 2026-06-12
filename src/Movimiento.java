@@ -45,8 +45,7 @@ private void agregarMovimientosSalto(int fO, int cO, List<int[]> destinos) {
             int df = actual[0] + (2 * d[0]);
             int dc = actual[1] + (2 * d[1]);
 
-            if (!tablero.esValida(mf, mc) || tablero.getFicha(mf, mc) == Tablero.VACIO) continue;
-            if (!tablero.esValida(df, dc) || tablero.getFicha(df, dc) != Tablero.VACIO) continue;
+            if (!esSaltoValido(mf, mc, df, dc)) continue;
 
             String clave = df + "," + dc;
             if (!visitados.contains(clave)) {
@@ -57,6 +56,17 @@ private void agregarMovimientosSalto(int fO, int cO, List<int[]> destinos) {
         }
     }
 }
+/**
+ * Indica si existe un salto válido sobre la celda intermedia (mf, mc)
+ * hacia la celda destino (df, dc).
+ */
+private boolean esSaltoValido(int mf, int mc, int df, int dc) {
+    return tablero.esValida(mf, mc)
+        && tablero.getFicha(mf, mc) != Tablero.VACIO
+        && tablero.esValida(df, dc)
+        && tablero.getFicha(df, dc) == Tablero.VACIO;
+}
+
 public List<int[]> destinosLegales(int fO, int cO) {
     List<int[]> destinos = new ArrayList<>();
 

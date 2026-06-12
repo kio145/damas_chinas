@@ -37,8 +37,8 @@ public class Main extends JFrame {
     private int indiceTurno = 0;
     private int turnoActual = 0;
 
-    private int selFila = -1;
-    private int selCol = -1;
+    private int fichaSeleccionadaFila = -1;
+    private int fichaSeleccionadaCol = -1;
 
     private List<int[]> movimientosLegales = null;
     private boolean juegoTerminado = false;
@@ -261,8 +261,8 @@ public class Main extends JFrame {
         indiceTurno = 0;
         turnoActual = jugadoresActivos[indiceTurno];
 
-        selFila = -1;
-        selCol = -1;
+        fichaSeleccionadaFila = -1;
+        fichaSeleccionadaCol = -1;
         movimientosLegales = null;
         juegoTerminado = false;
     }
@@ -447,11 +447,11 @@ public class Main extends JFrame {
             return;
         }
 
-        if (selFila != -1) {
+        if (fichaSeleccionadaFila != -1) {
             if (esMovimientoLegal(f, c)) {
                 int jugadorQueMovio = turnoActual;
 
-                movimiento.mover(selFila, selCol, f, c);
+                movimiento.mover(fichaSeleccionadaFila, fichaSeleccionadaCol, f, c);
                 deseleccionar();
 
                 if (verificarVictoria(jugadorQueMovio)) {
@@ -469,16 +469,16 @@ public class Main extends JFrame {
             deseleccionar();
         }
 
-        int val = tablero.getFicha(f, c);
+        int jugadorEnCelda = tablero.getFicha(f, c);
 
-        if (val == turnoActual && fichas.esJugadorActivo(val)) {
-            selFila = f;
-            selCol = c;
+          if (jugadorEnCelda == turnoActual && fichas.esJugadorActivo(jugadorEnCelda)) {
+            fichaSeleccionadaFila = f;
+            fichaSeleccionadaCol = c;
             movimientosLegales = movimiento.destinosLegales(f, c);
         } else {
-            if (val >= 0) {
+            if (jugadorEnCelda >= 0) {
                 lblMensajeTurno.setText(
-                    "No es turno de " + NOMBRES[val] +
+                    "No es turno de " + NOMBRES[jugadorEnCelda] +
                     ". Debe jugar " + NOMBRES[turnoActual]
                 );
             }
@@ -502,8 +502,8 @@ public class Main extends JFrame {
     }
 
     private void deseleccionar() {
-        selFila = -1;
-        selCol = -1;
+        fichaSeleccionadaFila = -1;
+        fichaSeleccionadaCol = -1;
         movimientosLegales = null;
     }
 
@@ -588,7 +588,7 @@ public class Main extends JFrame {
 
                 Point p = pixel(f, c, cx, cy);
 
-                boolean estaSeleccionada = (f == selFila && c == selCol);
+                boolean estaSeleccionada = (f == fichaSeleccionadaFila && c == fichaSeleccionadaCol);
 
                 if (val == Tablero.VACIO) {
                     g.setColor(new Color(60, 60, 80));
