@@ -64,8 +64,8 @@ public List<int[]> destinosLegales(int fO, int cO) {
         return destinos;
     }
 
-    agregarMovimientosPaso(fO, cO, destinos);   // ← reemplaza las 7 líneas
-    agregarMovimientosSalto(fO, cO, destinos);  // ← reemplaza las 31 líneas
+    agregarMovimientosPaso(fO, cO, destinos);   // reemplaza las 7 líneas
+    agregarMovimientosSalto(fO, cO, destinos);  // reemplaza las 31 líneas
 
     return destinos;
 }
@@ -76,7 +76,7 @@ public List<int[]> destinosLegales(int fO, int cO) {
     List<int[]> legales = destinosLegales(fO, cO);
     for (int[] dest : legales) {
         if (dest[0] == fD && dest[1] == cD) {
-            return tablero.moverFicha(fO, cO, fD, cD); // ← directo a Tablero
+            return tablero.moverFicha(fO, cO, fD, cD); // directo a Tablero
         }
     }
     return false;

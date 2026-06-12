@@ -20,6 +20,14 @@ public class Main extends JFrame {
         "Rojo", "Azul", "Verde", "Amarillo", "Blanco", "Morado"
     };
 
+    private static final int ANCHO_CANVAS = 600;
+    private static final int ALTO_CANVAS = 580;
+    private static final int CENTRO_X = 320;
+    private static final int CENTRO_Y = 320;
+    private static final int DISTANCIA_CELDAS = 27;
+    private static final int RADIO_FICHA = 10;
+    private static final int DISTANCIA_CLICK = 14;
+
     private Tablero tablero;
     private Fichas fichas;
     private Movimiento movimiento;
@@ -44,8 +52,7 @@ public class Main extends JFrame {
     private JPanel panelColorTurno;
     private JPanel panelIndicadorTurno;
 
-    private Timer timerCronometro;
-    private int segundosPartida = 0;
+    private CronometroJuego cronometro;
 
     public Main() {
         cantidadJugadores = pedirCantidadJugadores();
@@ -71,7 +78,7 @@ public class Main extends JFrame {
             }
         };
 
-        canvas.setPreferredSize(new Dimension(600, 580));
+        canvas.setPreferredSize(new Dimension(ANCHO_CANVAS, ALTO_CANVAS));
         canvas.setBackground(new Color(30, 30, 40));
 
         canvas.addMouseListener(new MouseAdapter() {
@@ -97,6 +104,8 @@ public class Main extends JFrame {
         lblCronometro.setFont(new Font("Arial", Font.BOLD, 13));
         lblCronometro.setForeground(Color.WHITE);
         lblCronometro.setBorder(BorderFactory.createEmptyBorder(2, 0, 4, 0));
+
+        cronometro = new CronometroJuego(lblCronometro);
 
         JPanel panelTextos = new JPanel(new GridLayout(2, 1));
         panelTextos.setBackground(new Color(30, 30, 40));
@@ -162,7 +171,7 @@ public class Main extends JFrame {
         setLocationRelativeTo(null);
         setVisible(true);
 
-        iniciarCronometro();
+        cronometro.iniciar();
     }
 
     private JPanel crearPanelIndicadorTurno() {
@@ -260,7 +269,7 @@ public class Main extends JFrame {
 
     private void reiniciarPartida() {
         iniciarObjetosJuego();
-        reiniciarCronometro();
+        cronometro.reiniciar();
 
         actualizarTextoTurno();
         canvas.repaint();
@@ -291,7 +300,7 @@ public class Main extends JFrame {
         }
 
         iniciarObjetosJuego();
-        reiniciarCronometro();
+        cronometro.reiniciar();
 
         actualizarTextoTurno();
         canvas.repaint();
@@ -309,7 +318,7 @@ public class Main extends JFrame {
 
         cantidadJugadores = nuevaCantidad;
         iniciarObjetosJuego();
-        reiniciarCronometro();
+        cronometro.reiniciar();
 
         actualizarTextoTurno();
         canvas.repaint();
@@ -320,44 +329,6 @@ public class Main extends JFrame {
             "Configuración actualizada",
             JOptionPane.INFORMATION_MESSAGE
         );
-    }
-
-    private void iniciarCronometro() {
-        detenerCronometro();
-
-        segundosPartida = 0;
-        actualizarCronometro();
-
-        timerCronometro = new Timer(1000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                segundosPartida++;
-                actualizarCronometro();
-            }
-        });
-
-        timerCronometro.start();
-    }
-
-    private void detenerCronometro() {
-        if (timerCronometro != null) {
-            timerCronometro.stop();
-        }
-    }
-
-    private void reiniciarCronometro() {
-        iniciarCronometro();
-    }
-
-    private void actualizarCronometro() {
-        int minutos = segundosPartida / 60;
-        int segundos = segundosPartida % 60;
-
-        String tiempo = String.format("%02d:%02d", minutos, segundos);
-
-        if (lblCronometro != null) {
-            lblCronometro.setText("Tiempo de partida: " + tiempo);
-        }
     }
 
     private void actualizarTextoTurno() {
@@ -417,13 +388,13 @@ public class Main extends JFrame {
 
     private void finalizarJuego(String ganador) {
         juegoTerminado = true;
-        detenerCronometro();
+        cronometro.detener();
 
         lblMensajeTurno.setText("Partida finalizada. Ganador: " + ganador);
 
         JOptionPane.showMessageDialog(
             this,
-            "¡VICTORIA!\nGanador: " + ganador + "\n" + lblCronometro.getText(),
+            "¡VICTORIA!\nGanador: " + ganador + "\n" + cronometro.getTextoTiempo(),
             "HU5 - Condición de victoria",
             JOptionPane.INFORMATION_MESSAGE
         );
@@ -463,7 +434,7 @@ public class Main extends JFrame {
             return;
         }
 
-        int[] celda = pixelACelda(px, py, 320, 320);
+        int[] celda = pixelACelda(px, py, CENTRO_X, CENTRO_Y);
 
         if (celda == null) {
             return;
@@ -537,7 +508,7 @@ public class Main extends JFrame {
     }
 
     private Point pixel(int f, int c, int cx, int cy) {
-        int d = 27;
+        int d = DISTANCIA_CELDAS;
 
         double x = (c - f) * d * Math.sqrt(3) / 2.0;
         double y = (f + c - 16) * d * 0.75;
@@ -550,10 +521,10 @@ public class Main extends JFrame {
 
     private int[] pixelACelda(int px, int py, int cx, int cy) {
         int[] mejor = null;
-        double minDist = 14;
+        double minDist = DISTANCIA_CLICK;
 
-        for (int f = 0; f < 17; f++) {
-            for (int c = 0; c < 17; c++) {
+        for (int f = 0; f < Tablero.TAMANIO; f++) {
+            for (int c = 0; c < Tablero.TAMANIO; c++) {
                 if (!tablero.esValida(f, c)) {
                     continue;
                 }
@@ -574,9 +545,9 @@ public class Main extends JFrame {
     private void dibujar(Graphics2D g) {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        int cx = 320;
-        int cy = 320;
-        int radio = 10;
+        int cx = CENTRO_X;
+        int cy = CENTRO_Y;
+        int radio = RADIO_FICHA;
 
         int[][] dirs = {
             {0, 1},
@@ -587,8 +558,8 @@ public class Main extends JFrame {
         g.setColor(new Color(80, 80, 100));
         g.setStroke(new BasicStroke(1f));
 
-        for (int f = 0; f < 17; f++) {
-            for (int c = 0; c < 17; c++) {
+        for (int f = 0; f < Tablero.TAMANIO; f++) {
+            for (int c = 0; c < Tablero.TAMANIO; c++) {
                 if (!tablero.esValida(f, c)) {
                     continue;
                 }
@@ -607,8 +578,8 @@ public class Main extends JFrame {
             }
         }
 
-        for (int f = 0; f < 17; f++) {
-            for (int c = 0; c < 17; c++) {
+        for (int f = 0; f < Tablero.TAMANIO; f++) {
+            for (int c = 0; c < Tablero.TAMANIO; c++) {
                 int val = tablero.getFicha(f, c);
 
                 if (val == Tablero.INVALIDO) {
